@@ -1,0 +1,34 @@
+config {
+  title: string,
+  body_title:{
+    content: string,
+    color: string,
+  }
+  body: string,
+  close: bool, // Работает при условии, что close: true и isTimer: false, чтобы не создавалось коллизий
+  timer: {
+    seconds: number,
+    isTimer: bool,
+  },
+  btns:[{
+     id: number,
+     content: string,
+     bgcolor: string,
+     icon: string, //подразумевается url иконки
+     position_icon: 'start'|'end', //defaultValue = start
+   },
+   {
+     id: number,
+     content: string,
+     bgcolor: string,
+     icon: string, //подразумевается url иконки
+     position_icon: 'start'|'end', //defaultValue = start
+   },
+   {}...],
+  form: {
+    type: string, //подразумевается text / email / password
+    isForm: bool,
+  },
+  title_photo: 'string', //подразумевается url фотографии
+  after_content_photo: 'string', //подразумевается url фотографии
+}
