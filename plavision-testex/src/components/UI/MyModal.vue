@@ -1,76 +1,74 @@
-<script>
-import {ref, computed} from 'vue';
+<script setup>
+import {ref, computed, onMounted} from 'vue';
 
+const props = defineProps({
+  config: Object,
+  methods: Object,
+});
+
+const form__input = ref({
+  isValid: false,
+  message: '',
+  content: '',
+});
+
+const startValidation = ref(false);
+let placeholder = ref(null);
+let timerInactive = ref(false);
+
+const endHandler = () => {
+  props.methods?.hide();
+};
+const placeholderInit = () => {
+  if (props.config?.form?.type === 'email') {
+    placeholder.value = 'example@email.com'
+  }
+  if (props.config?.form?.type === 'text') {
+    placeholder.value = 'Введите запрошенные данные'
+  }
+  if (props.config?.form?.type === 'password') {
+    placeholder.value = 'Введите пароль'
+  }
+};
+
+const hideHandler = () => {
+  if (props.config?.timer?.isTimer === false) {
+    props.methods?.hide();
+  }
+};
+
+const HandleToggleTimer = (newTimerInactiveValue) => {
+  timerInactive.value = newTimerInactiveValue;
+};
+
+onMounted(() => {
+  placeholderInit();
+})
+
+const isNotRequired = computed(() => {
+  if (startValidation.value) {
+    if (form__input.value.content === null || form__input.value.content === undefined || form__input.value.content === '') {
+      form__input.value.message = 'Обязательное поле'
+      form__input.value.isValid = false;
+      return false;
+    }
+    form__input.value.isValid = true;
+    return true;
+  } else {
+    return null;
+  }
+})
+
+const submitHandler = () => {
+  if (form__input.value.isValid) {
+    props.methods?.hide();
+    //Код отправки данных на сервер
+  }
+}
+</script>
+<script>
 export default {
   name: 'my-modal',
-  props: {
-    config: Object,
-    hide: Function,
-  },
-  data() {
-    return {
-      placeholder: null,
-    }
-  },
-  methods: {
-    endHandler() {
-      this.hide();
-    },
-    hideHandler() {
-      if (this.config?.timer?.isTimer === false) {
-        this.hide();
-      }
-    },
-    placeholderInit() {
-      if (this.config?.form?.type === 'email') {
-        this.placeholder = 'example@email.com'
-      }
-      if (this.config?.form?.type === 'text') {
-        this.placeholder = 'Введите запрошенные данные'
-      }
-      if (this.config?.form?.type === 'password') {
-        this.placeholder = 'Введите пароль'
-      }
-    }
-  },
-  mounted() {
-    this.placeholderInit();
-  },
-  setup(props) {
-    const form__input = ref({
-      isValid: false,
-      message: '',
-      content: '',
-    });
-    const startValidation = ref(false);
-
-    const isNotRequired = computed(() => {
-      if (startValidation.value) {
-        if (form__input.value.content === null || form__input.value.content === undefined || form__input.value.content === '') {
-          form__input.value.message = 'Обязательное поле'
-          return false;
-        }
-        form__input.value.isValid = true;
-        return true;
-      } else {
-        return null;
-      }
-    })
-
-    const submitHandler = () => {
-      if (form__input.value.isValid) {
-        props.hide();
-        //Код отправки данных на сервер
-      }
-    }
-
-    return {
-      form__input,
-      isNotRequired,
-      submitHandler,
-      startValidation,
-    }
-  }
 }
 </script>
 
@@ -79,40 +77,41 @@ export default {
   <div class="modal" @click.stop="hideHandler">
     <div @click.stop class="modal__content">
       <p class="modal__title">
-        {{ config?.title }}
+        {{ props.config?.title }}
       </p>
-      <div v-if="config?.close && !config?.timer?.isTimer" class="modal__close modal__close-btn" @click="hide">
+      <div v-if="props.config?.close && !props.config?.timer?.isTimer" class="modal__close modal__close-btn"
+           @click="props.methods?.hide">
         <i class="gg-close"></i>
       </div>
-      <div v-if="config?.timer?.isTimer" class="modal__close">
+      <div v-if="props.config?.timer?.isTimer" class="modal__close">
         <my-timer
-            :time="config?.timer?.seconds"
+            :time="props.config?.timer?.seconds"
             :end-handler="endHandler"
         />
       </div>
       <div class="modal__body">
-        <div v-show="config?.title_photo?.isTitlePhoto === true">
-          <img class='title__photo' :src="config?.title_photo?.urlPhoto">
+        <div class="bgImg" v-show="props.config?.title_photo?.isTitlePhoto === true">
+          <img class='title__photo' :src="props.config?.title_photo?.urlPhoto">
         </div>
         <div :style="{
-          color: config?.body_title?.color
+          color: props.config?.body_title?.color
         }" class="modal__body-title">
-          {{ config?.body_title?.content }}
+          {{ props.config?.body_title?.content }}
         </div>
         <div class="modal__body-content">
-          {{ config?.body }}
+          {{ props.config?.body }}
         </div>
-        <div v-show="config?.after_content_photo?.isAfterContentPhoto === true">
-          <img class='after-content-photo' :src="config?.after_content_photo?.urlPhoto">
+        <div v-show="props.config?.after_content_photo?.isAfterContentPhoto === true">
+          <img class='after-content-photo' :src="props.config?.after_content_photo?.urlPhoto">
         </div>
-        <div v-if="config?.form?.isForm" class="modal__form-wrapper">
+        <div v-if="props.config?.form?.isForm" class="modal__form-wrapper">
           <input class="modal__form" v-model='form__input.content' :type="config?.form?.type" :placeholder="placeholder"
                  :class="{ invalid: isNotRequired === false}" @focus="startValidation = true">
           <span v-show="isNotRequired === false" class="modal__form-error">{{ form__input.message }}</span>
         </div>
       </div>
-      <div class="btns__wrapper">
-        <div v-for="btn in config?.btns" :key="btn.id">
+      <div v-show="props.config?.btns !== undefined" class="btns__wrapper">
+        <div v-for="btn in props.config?.btns" :key="btn.id">
 
           <button type="submit" @click="submitHandler" class="btn"
                   :style="`background: ${isNotRequired ? btn?.bgcolor : 'radial-gradient(ellipse at center, rgba(45,47,49,1) 0%, rgba(65,68,72,1) 100%)'}`"

@@ -1,45 +1,62 @@
-<script>
+<script setup>
 import CircleProgress from 'vue3-circle-progress'
+import {ref, onMounted, computed, onUnmounted} from 'vue';
+//Инициализация пропсов
+const props = defineProps({
+  time: Number,
+  endHandler: Function,
+});
+//Инициализация необходимых переменных
+const currentTime = ref(props.time);
+const color = '#437FC0';
+const empty_color = '#041743';
+let timerId = ref();
+//Computed
+const progress = computed(() => -(currentTime.value / props.time) * 100);
 
-export default {
-  components: {
-    CircleProgress,
-  },
-  name: 'my-timer',
-  props: {
-    time: Number,
-    endHandler: Function,
-  },
-  data() {
-    return {
-      currentTime: this.time,
-      intervalId: null,
-      color: '#437FC0',
-      empty_color: '#041743',
+//Methods
+const startTimer = () => {
+  const delay = 1000;
+  let running = true;
+  const repeat = () => {
+    if (!running) {
+      return;
     }
-  },
-  methods: {
-    startTimer() {
-      console.log()
-      this.intervalId = setInterval(() => {
-        if (this.currentTime - 1 === 0) {
-          this.currentTime = 0;
-          clearInterval(this.intervalId);
-          this.endHandler();
-        } else {
-          this.currentTime--;
-        }
-      }, 1000)
+    if (currentTime.value - 1 === 0) {
+      currentTime.value = 0;
+      props.endHandler();
+      running = false; // Останавливаем таймер
+    } else {
+      currentTime.value--;
     }
-  },
-  computed: {
-    progress() {
-      return -(this.currentTime / this.time) * 100;
+    setTimeout(repeat, delay);
+  };
+  setTimeout(repeat, delay);
+
+  return {
+    stop: () => {
+      running = false;
     },
-  },
-  mounted() {
-    this.startTimer()
-  }
+  };
+};
+
+//Mounted
+onMounted(() => {
+  console.log('mounted!');
+  timerId = startTimer();
+});
+
+//Unmounted
+onUnmounted(() => {
+  console.log('unmounted!');
+  timerId.stop();
+});
+
+</script>
+
+<script>
+export default {
+  name: 'my-timer'
 }
 </script>
 

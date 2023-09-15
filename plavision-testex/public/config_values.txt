@@ -22,7 +22,7 @@ config {
      content: string,
      bgcolor: string,
      icon: string, //подразумевается url иконки
-     position_icon: 'start'|'end', //defaultValue = start
+     position_icon: 'start'|'end',
    },
    {}...],
   form: {
